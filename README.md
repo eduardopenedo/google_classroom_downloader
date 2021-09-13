@@ -1,5 +1,8 @@
 
-<span style="font-size:8rem;display:block" align="center">👨‍🏫</span>
+<p align="center" width="100%">
+    <img width="50%" src="https://github.com/eduardopenedo/google_classroom_downloader/blob/main/docs/images/kissclipart-google-classroom-icon-clipart-google-classroom-edu-9a98222156330de7.png?raw=tr"> 
+</p>
+
 <p align="center" style="font-size:2rem">
     Google Classroom Downloader
 </p>
@@ -26,7 +29,7 @@
 
 * This project use [Python 3+](https://www.python.org/downloads/), go check them out if you don't have them locally installed.
 
-* The project need some demependencies too, to install all of then just place the command bellow in your favourite terminal
+* The project need some dependencies too, to install all of then just place the command bellow in your favourite terminal.
 ```
 pip install -r requirements.txt
 ```
@@ -46,7 +49,8 @@ pip install -r requirements.txt
 
 ## Usage
 
-To get all stufs of your courses just open a command line in the root folder of the project and execute the command above, it will download all classes and activities of the courses you're at
+To get all stuffs just open a command line in the root folder of the project and execute the command above, it will download all classes and activities of the courses you're at
+
 ```
 python main.py
 ```
@@ -57,4 +61,4 @@ Feel free to dive in! [Open an issue](https://github.com/RichardLitt/standard-re
 
 
 ## License
-This project was made with ... license.
+This project was made with [TBD] license.
