@@ -28,7 +28,7 @@
 
 ## Install
 
-* This project use [Python 3+](https://www.python.org/downloads/), go check them out if you don't have them locally installed.
+* This project use [Python 3+](https://www.python.org/downloads/), go check out if you don't have it locally installed.
 
 * The project need some dependencies too, to install all of then just place the command bellow in your favourite terminal.
 ```
