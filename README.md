@@ -3,9 +3,10 @@
     <img width="50%" src="https://github.com/eduardopenedo/google_classroom_downloader/blob/main/docs/images/kissclipart-google-classroom-icon-clipart-google-classroom-edu-9a98222156330de7.png?raw=true"> 
 </p>
 
-<p align="center" style="font-size:2rem">
+<h1 align="center">
     Google Classroom Downloader
-</p>
+</h1>
+
 <p align="center" style="font-size:1.4rem">
     A script to make downloading files of Google Classroom more easy
 </p>
