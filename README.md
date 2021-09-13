@@ -15,6 +15,7 @@
     <img src="https://img.shields.io/pypi/v/pip?label=pip">
     <img src="https://img.shields.io/static/v1?label=google-api-python-client&message=2.20.0&color=green">
     <img src="https://img.shields.io/static/v1?label=google-auth-oauthlib2&message=0.4.6&color=green">
+    <img src="https://img.shields.io/static/v1?label=youtube-dl&message=2021.6.6&color=red">
 </div>
 <br/>
 
