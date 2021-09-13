@@ -58,7 +58,7 @@ python main.py
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/RichardLitt/standard-readme/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/eduardopenedo/google_classroom_downloader/issues/new) or submit PRs.
 
 
 ## License
