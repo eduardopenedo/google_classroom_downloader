@@ -35,7 +35,7 @@
 pip install -r requirements.txt
 ```
 
-* Now we need "login" to your Google account, to make this just follow the steps above
+* Now we need "login" to your Google account, to make this just follow the steps below
 
     1. Clone or download the zip of the project
 
