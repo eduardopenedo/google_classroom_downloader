@@ -127,8 +127,7 @@ def main():
     drive_service = build('drive', 'v3', credentials=creds)
 
     courses = classroom_service.courses().list().execute()
-    cursos_file = open("cursos.json", "w")
-    cursos_file.write(json.dumps(courses))
+    # cursos_file.write(json.dumps(courses))
 
     for course in courses["courses"]:
         course_name = course["name"]
@@ -139,15 +138,6 @@ def main():
 
         download_materials(course_work_materials,topics,course_name,drive_service)
         download_activities(course_works,drive_service, course_name)
-
-        topicos_file = open(f"topicos{course_name}.json","w")
-        cw_file =  open(f"trabalhos{course_name}.json","w")
-        cwm_file = open(f"materials{course_name}.json","w")
-
-
-        topicos_file.write(json.dumps(topics))
-        cw_file.write(json.dumps(course_works))
-        cwm_file.write(json.dumps(course_work_materials))
 
 if __name__ == '__main__':
     main()
