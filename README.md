@@ -29,6 +29,8 @@
 
 ## Install
 
+* Clone or download the zip of the project
+
 * Python 
     * This project use [Python 3+](https://www.python.org/downloads/), go check out if you don't have it locally installed.
 
@@ -40,18 +42,15 @@
 
 * Credentials.json
     * Now we need "login" to your Google account, to make this just follow the steps below
+        * Make a [new project in Google Cloud Plataform](https://developers.google.com/workspace/guides/create-project)
 
-        1. Clone or download the zip of the project
+        * Enable Google Drive and Google Classroom Api at the new project created
 
-        2. Make a [new project in Google Cloud Plataform](https://developers.google.com/workspace/guides/create-project)
+        * In the tab "Api and Services" make a new OAuth 2.0 Credential and download the json file
 
-        3. Enable Google Drive and Google Classroom Api at the new project created
+        * In the tab OAuth Login Screen, click in the button "Publish App"
 
-        4. In the tab "Api and Services" make a new OAuth 2.0 Credential and download the json file
-
-        5. In the tab OAuth Login Screen, click in the button "Publish App"
-
-        6. Rename the json downloaded to "credentials.json" and place into the root folder of the project
+        * Rename the json downloaded to "credentials.json" and place into the root folder of the project
 
 
 ## Usage
