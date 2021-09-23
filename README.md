@@ -34,9 +34,9 @@
 * This project use [Python 3+](https://www.python.org/downloads/), install it if you dont have it on your machine.
 
 * Install ptoject dependencies
-        ```
-        pip install -r requirements.txt
-        ```
+```
+pip install -r requirements.txt
+```
 
 * Credentials.json
     * Make a [new project in Google Cloud Plataform](https://developers.google.com/workspace/guides/create-project)
@@ -54,9 +54,9 @@
 
 To get all stuffs just open a command line in the root folder of the project and execute the command above, it will download all classes and activities of the courses you're at
 
-    ```
-    python main.py
-    ```
+```
+python main.py
+```
 
 ## Contributing
 
