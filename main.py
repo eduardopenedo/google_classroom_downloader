@@ -91,7 +91,10 @@ def download_assets(drive_service,save_location,material_assets):
             os.system(
                 f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
 
-def download_materials(course_work_materials,topics,course_name,drive_service):
+def download_materials(course_name,drive_service, classroom_service, course_id):
+    topics = classroom_service.courses().topics().list(courseId=course_id).execute()
+    course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
+
     if 'courseWorkMaterial' in course_work_materials.keys():
         for material in course_work_materials['courseWorkMaterial']:
             aula_name = material["title"]
@@ -105,11 +108,13 @@ def download_materials(course_work_materials,topics,course_name,drive_service):
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", course_name,
                                                      re.sub(r'[<>:/|\?]', "-", aula_name))
-                    download_assets(drive_service,save_location,material_assets)
+                    if not os.path.exists(save_location):
+                        download_assets(drive_service,save_location,material_assets)
     else:
         pass
 
-def download_activities(course_works,drive_service, course_name):
+def download_activities(classroom_service,drive_service, course_name,course_id):
+    course_works = classroom_service.courses().courseWork().list(courseId=course_id).execute()
     if "courseWork" in course_works.keys():
         for work in course_works["courseWork"]:
             activity_name = work["title"]
@@ -117,7 +122,8 @@ def download_activities(course_works,drive_service, course_name):
             for material in work["materials"]:
                 save_dir = os.path.join(os.getcwd(), "Classroom Downloads", course_name, "Activities",
                                         re.sub(r'[<>:/|\?]', "-", activity_name))
-                download_assets(drive_service,save_dir,material)
+                if not os.path.exists(save_dir):
+                    download_assets(drive_service,save_dir,material)
 
 
 def main():
@@ -127,17 +133,16 @@ def main():
     drive_service = build('drive', 'v3', credentials=creds)
 
     courses = classroom_service.courses().list().execute()
-    # cursos_file.write(json.dumps(courses))
 
     for course in courses["courses"]:
         course_name = course["name"]
-        course_id = course["id"]
-        topics = classroom_service.courses().topics().list(courseId= course_id).execute()
-        course_works = classroom_service.courses().courseWork().list(courseId= course_id).execute()
-        course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId= course_id).execute()
+        course_folder_path = os.path.join(os.getcwd(),"Classroom Downloads", course_name)
+        if not os.path.exists(course_folder_path):
+            os.makedirs(course_folder_path)
 
-        download_materials(course_work_materials,topics,course_name,drive_service)
-        download_activities(course_works,drive_service, course_name)
+        course_id = course["id"]
+        download_materials(course_name,drive_service, classroom_service,course_id)
+        download_activities(classroom_service,drive_service, course_name,course_id)
 
 if __name__ == '__main__':
     main()
