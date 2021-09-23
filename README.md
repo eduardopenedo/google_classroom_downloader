@@ -30,16 +30,16 @@
 ## Install
 
 * Python 
-    This project use [Python 3+](https://www.python.org/downloads/), go check out if you don't have it locally installed.
+    * This project use [Python 3+](https://www.python.org/downloads/), go check out if you don't have it locally installed.
 
 * Requeriments
-    The project need some dependencies too, to install all of then just place the command bellow in your favourite terminal.
+    * The project need some dependencies too, to install all of then just place the command bellow in your favourite terminal.
     ```
     pip install -r requirements.txt
     ```
 
 * Credentials.json
-    Now we need "login" to your Google account, to make this just follow the steps below
+    * Now we need "login" to your Google account, to make this just follow the steps below
 
     1. Clone or download the zip of the project
 
