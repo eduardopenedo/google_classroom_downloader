@@ -11,14 +11,8 @@
     A script to make downloading files of Google Classroom more easy
 </p>
 
-<div align="center">
-    <img src="https://img.shields.io/pypi/v/pip?label=pip">
-    <img src="https://img.shields.io/static/v1?label=google-api-python-client&message=2.20.0&color=green">
-    <img src="https://img.shields.io/static/v1?label=google-auth-oauthlib2&message=0.4.6&color=green">
-    <img src="https://img.shields.io/static/v1?label=youtube-dl&message=2021.6.6&color=red">
-</div>
-<br/>
-
+[![Updates](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
+[![Python 3](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/python-3-shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
 
 ## Table of Contents
 
