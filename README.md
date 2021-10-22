@@ -12,8 +12,12 @@
 </p>
 
 <p align="center" style="font-size:1.4rem">
-[![Updates](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
-[![Python 3](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/python-3-shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
+    <a href="https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/">
+        <img src="https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/shield.svg">
+    </a>
+        <a href="https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/">
+        <img src="https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/python-3-shield.svg">
+    </a>
 </p>
 
 ## Table of Contents
