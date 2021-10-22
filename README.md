@@ -64,4 +64,4 @@ Feel free to dive in! [Open an issue](https://github.com/eduardopenedo/google_cl
 
 
 ## License
-This project was made with AGPL license.
+This project was made with GPL license.
