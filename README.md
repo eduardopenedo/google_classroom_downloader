@@ -11,8 +11,10 @@
     A script to make downloading files of Google Classroom more easy
 </p>
 
+<p align="center" style="font-size:1.4rem">
 [![Updates](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
 [![Python 3](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/python-3-shield.svg)](https://pyup.io/repos/github/eduardopenedo/google_classroom_downloader/)
+</p>
 
 ## Table of Contents
 
