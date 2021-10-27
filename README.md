@@ -33,7 +33,7 @@
 
 * This project use [Python 3+](https://www.python.org/downloads/), install it if you dont have it on your machine.
 
-* Install ptoject dependencies
+* Install project dependencies
 ```
 pip install -r requirements.txt
 ```
