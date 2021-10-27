@@ -95,7 +95,7 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
     topics = classroom_service.courses().topics().list(courseId=course_id).execute()
     course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
 
-    if 'courseWorkMaterial' in course_work_materials.keys():
+    if course_work_materials.get('courseWorkMaterial', False):
         for material in course_work_materials['courseWorkMaterial']:
             aula_name = material["title"]
 
@@ -115,7 +115,7 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
 
 def download_activities(classroom_service,drive_service, course_name,course_id):
     course_works = classroom_service.courses().courseWork().list(courseId=course_id).execute()
-    if "courseWork" in course_works.keys():
+    if course_works.get("courseWork",False):
         for work in course_works["courseWork"]:
             activity_name = work["title"]
 
