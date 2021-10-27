@@ -1,11 +1,10 @@
 from __future__ import print_function
 
-import json
 import os.path
 import re
 import io
 
-import googleapiclient.discovery
+# import googleapiclient.discovery
 from googleapiclient.discovery import build
 from googleapiclient import http
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -58,72 +57,73 @@ def download_drive_file(file_id,drive_service,file_path):
     fh = io.BytesIO()
     downloader = http.MediaIoBaseDownload(fh, request)
     done = False
-    print(os.path.basename(file_path))
+    print(file_path.split("\\")[-1])
     while done is False:
         status, done = downloader.next_chunk()
         print("Download %d%%." % int(status.progress() * 100))
-
     f = open(file_path, "wb")
     f.write(fh.getbuffer())
 
+
 def download_assets(drive_service,save_location,material_assets):
-        if "driveFile" in material_assets.keys():
-            file_id = material_assets["driveFile"]["driveFile"]["id"]
-            file_name = material_assets["driveFile"]["driveFile"]["title"]
+    if material_assets.get("driveFile"):
+        file_id = material_assets["driveFile"]["driveFile"]["id"]
+        file_name = material_assets["driveFile"]["driveFile"]["title"]
+        file_path = os.path.join(save_location, file_name)
 
-            if not os.path.exists(save_location):
-                os.makedirs(save_location)
+        if not os.path.exists(save_location):
+            os.makedirs(save_location)
+        try:
+            if not os.path.exists(file_path):
+                download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
+            else:
+                print(f"{os.path.basename(save_location)} already exists")
+        except Exception as e:
+            print(e)
 
-            try:
-                download_drive_file(file_id=file_id, file_path=os.path.join(save_location, file_name),
-                                    drive_service=drive_service)
-            except Exception as e:
-                print(e)
+    elif "youtubeVideo" in material_assets.keys():
+        yturl = material_assets["youtubeVideo"]["alternateLink"]
+        yt_name = material_assets["youtubeVideo"]["title"]
 
-        elif "youtubeVideo" in material_assets.keys():
-            yturl = material_assets["youtubeVideo"]["alternateLink"]
-            yt_name = material_assets["youtubeVideo"]["title"]
-
-            if not os.path.exists(save_location):
-                os.makedirs(save_location)
-
+        if not os.path.exists(save_location):
+            os.makedirs(save_location)
             print(f"youtube-dl.exe {yturl} -o {os.path.join(save_location, yt_name)}")
             os.system(
                 f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
+
 
 def download_materials(course_name,drive_service, classroom_service, course_id):
     topics = classroom_service.courses().topics().list(courseId=course_id).execute()
     course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
 
-    if 'courseWorkMaterial' in course_work_materials.keys():
+    if course_work_materials.get('courseWorkMaterial'):
         for material in course_work_materials['courseWorkMaterial']:
             aula_name = material["title"]
 
             if 'materials' in material.keys():
                 for material_assets in material["materials"]:
-                    if "topicId" in material.keys():
+                    if material.get("topicId"):
                         topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name), re.sub(r'[<>:/|\?]', "-", topic_name),
                                                      re.sub(r'[<>:/|\?]', "-", aula_name))
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name),
                                                      re.sub(r'[<>:/|\?]', "-", aula_name))
-                    if not os.path.exists(save_location):
-                        download_assets(drive_service,save_location,material_assets)
+                    download_assets(drive_service,save_location,material_assets)
     else:
         pass
 
+
 def download_activities(classroom_service,drive_service, course_name,course_id):
     course_works = classroom_service.courses().courseWork().list(courseId=course_id).execute()
-    if "courseWork" in course_works.keys():
+    if course_works.get("courseWork"):
         for work in course_works["courseWork"]:
             activity_name = work["title"]
 
             for material in work["materials"]:
                 save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name), "Activities",
                                         re.sub(r'[<>:/|\?]', "-", activity_name))
-                if not os.path.exists(save_dir):
-                    download_assets(drive_service,save_dir,material)
+                download_assets(drive_service,save_dir,material)
 
 
 def main():
@@ -143,6 +143,7 @@ def main():
         course_id = course["id"]
         download_materials(course_name,drive_service, classroom_service,course_id)
         download_activities(classroom_service,drive_service, course_name,course_id)
+
 
 if __name__ == '__main__':
     main()
