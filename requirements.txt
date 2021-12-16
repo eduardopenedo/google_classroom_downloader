@@ -24,4 +24,4 @@ six==1.16.0
 tqdm==4.62.3
 uritemplate==4.1.1
 urllib3==1.26.7
-youtube-dl==2021.6.6
+youtube-dl==2021.12.17
