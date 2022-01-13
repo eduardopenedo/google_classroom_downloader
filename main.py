@@ -119,7 +119,7 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
     if course_works.get("courseWork"):
         for work in course_works["courseWork"]:
             activity_name = work["title"]
-            if 'materials' in material.keys():
+            if 'materials' in work.keys():
                 for material in work["materials"]:
                     save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'"[<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'"[<>:/|\?]', "-", activity_name))
