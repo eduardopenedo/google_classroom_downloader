@@ -104,10 +104,10 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
                         topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
-                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name), re.sub(r'[<>:/|\?]', "-", topic_name),
+                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'[<>:/|\?]', "-", topic_name),
                                                      re.sub(r'[<>:/|\?]', "-", aula_name))
                     else:
-                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name),
+                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'[<>:/|\?]', "-", aula_name))
                     download_assets(drive_service,save_location,material_assets)
     else:
@@ -121,8 +121,8 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
             activity_name = work["title"]
 
             for material in work["materials"]:
-                save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'[<>:/|\?]', "-", course_name), "Activities",
-                                        re.sub(r'[<>:/|\?]', "-", activity_name))
+                save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'"[<>:/|\?]', "-", course_name), "Activities",
+                                        re.sub(r'"[<>:/|\?]', "-", activity_name))
                 download_assets(drive_service,save_dir,material)
 
 
