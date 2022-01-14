@@ -121,8 +121,8 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
             activity_name = work["title"]
             if 'materials' in work.keys():
                 for material in work["materials"]:
-                    save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'"[<>:/|\?]', "-", course_name), "Activities",
-                                            re.sub(r'"[<>:/|\?]', "-", activity_name))
+                    save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
+                                            re.sub(r'["<>:/|\?]', "-", activity_name))
                     download_assets(drive_service,save_dir,material)
 
 
