@@ -69,7 +69,7 @@ def download_assets(drive_service,save_location,material_assets):
     if material_assets.get("driveFile"):
         file_id = material_assets["driveFile"]["driveFile"]["id"]
         file_name = material_assets["driveFile"]["driveFile"]["title"]
-        file_path = os.path.join(save_location, file_name)
+        file_path = os.path.join(save_location, re.sub(r'["<>:/|\?]', "-",file_name))
 
         if not os.path.exists(save_location):
             os.makedirs(save_location)
@@ -108,7 +108,10 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
-                    download_assets(drive_service,save_location,material_assets)
+                    try:
+                        download_assets(drive_service,save_location,material_assets)
+                    except Exception as e:
+                        print(e)
     else:
         pass
 
