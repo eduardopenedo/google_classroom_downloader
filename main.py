@@ -98,9 +98,8 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
 
     if course_work_materials.get('courseWorkMaterial'):
         for material in course_work_materials['courseWorkMaterial']:
-            aula_name = material["title"]
-
-            if 'materials' in material.keys():
+            if 'materials' in material.keys() and 'title' in material.keys():
+                aula_name = material["title"]
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
                         topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
@@ -118,8 +117,8 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
     course_works = classroom_service.courses().courseWork().list(courseId=course_id).execute()
     if course_works.get("courseWork"):
         for work in course_works["courseWork"]:
-            activity_name = work["title"]
-            if 'materials' in work.keys():
+            if 'materials' in work.keys() and 'title'in work.keys():
+                activity_name = work["title"]
                 for material in work["materials"]:
                     save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
