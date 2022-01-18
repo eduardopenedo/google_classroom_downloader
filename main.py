@@ -66,30 +66,34 @@ def download_drive_file(file_id,drive_service,file_path):
 
 
 def download_assets(drive_service,save_location,material_assets):
+   
     if material_assets.get("driveFile"):
-        file_id = material_assets["driveFile"]["driveFile"]["id"]
-        file_name = material_assets["driveFile"]["driveFile"]["title"]
-        file_path = os.path.join(save_location, file_name)
-
-        if not os.path.exists(save_location):
-            os.makedirs(save_location)
         try:
+            file_id = material_assets["driveFile"]["driveFile"]["id"]
+            file_name = material_assets["driveFile"]["driveFile"]["title"]
+            file_path = os.path.join(save_location, re.sub(r'["<>:/|\?]', "-",file_name))
+
+            if not os.path.exists(save_location):
+                os.makedirs(save_location)
             if not os.path.exists(file_path):
                 download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
             else:
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
-            print(e)
+            print("GDrive asset can't be downloaded: ",e)
 
     elif "youtubeVideo" in material_assets.keys():
-        yturl = material_assets["youtubeVideo"]["alternateLink"]
-        yt_name = material_assets["youtubeVideo"]["title"]
+        try:
+            yturl = material_assets["youtubeVideo"]["alternateLink"]
+            yt_name = material_assets["youtubeVideo"]["title"]
 
-        if not os.path.exists(save_location):
-            os.makedirs(save_location)
-            print(f"youtube-dl.exe {yturl} -o {os.path.join(save_location, yt_name)}")
-            os.system(
-                f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
+            if not os.path.exists(save_location):
+                os.makedirs(save_location)
+                print(f"youtube-dl.exe {yturl} -o {os.path.join(save_location, yt_name)}")
+                os.system(
+                    f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
+        except Exception as e:
+            print("Youtube asset can't be downloaded: ",e)
 
 
 def download_materials(course_name,drive_service, classroom_service, course_id):
