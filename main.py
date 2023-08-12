@@ -144,8 +144,8 @@ def main():
             os.makedirs(course_folder_path)
 
         course_id = course["id"]
-        download_materials(course_name,drive_service, classroom_service,course_id)
-        download_activities(classroom_service,drive_service, course_name,course_id)
+        # download_materials(course_name,drive_service, classroom_service,course_id)
+        # download_activities(classroom_service,drive_service, course_name,course_id)
 
 
 if __name__ == '__main__':
