@@ -137,6 +137,17 @@ def main():
 
     courses = classroom_service.courses().list().execute()
 
+    i=1
+
+    for course in courses["courses"]:
+        print(f"Num: {i} --> Course Name: { course['name']} - { course['id'] }")
+        i=i+1
+
+    print("Please select the corses you want to download: (ex: 1,3 or 1,2,3)")
+    opt = ""
+    input(opt)
+    print(f"You have selected: {opt}")
+
     for course in courses["courses"]:
         course_name = course["name"]
         course_folder_path = os.path.join(os.getcwd(),"Classroom Downloads", course_name)
