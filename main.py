@@ -1,4 +1,5 @@
 from __future__ import print_function
+from cleantext import clean
 
 import os.path
 import re
@@ -10,6 +11,32 @@ from googleapiclient import http
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+
+def remove_emojis(data):
+    emoj = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        u"\U00002500-\U00002BEF"  # chinese char
+        u"\U00002702-\U000027B0"
+        u"\U00002702-\U000027B0"
+        u"\U000024C2-\U0001F251"
+        u"\U0001f926-\U0001f937"
+        u"\U00010000-\U0010ffff"
+        u"\u2640-\u2642" 
+        u"\u2600-\u2B55"
+        u"\u200d"
+        u"\u23cf"
+        u"\u23e9"
+        u"\u231a"
+        u"\ufe0f"  # dingbats
+        u"\u3030"
+        u"\u2705"
+        u"\1F3C6"
+                      "]+", re.UNICODE)
+    return re.sub(emoj, '', data)
+
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/classroom.courses.readonly",
@@ -70,13 +97,16 @@ def download_assets(drive_service,save_location,material_assets):
     if material_assets.get("driveFile"):
         try:
             file_id = material_assets["driveFile"]["driveFile"]["id"]
-            file_name = material_assets["driveFile"]["driveFile"]["title"]
+            file_name = clean(material_assets["driveFile"]["driveFile"]["title"])
             file_path = os.path.join(save_location, re.sub(r'["<>:/|\?]', "-",file_name))
+
+            print(file_name, file_path)
 
             if not os.path.exists(save_location):
                 os.makedirs(save_location)
             if not os.path.exists(file_path):
-                download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
+                pass
+                # download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
             else:
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
@@ -107,11 +137,13 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
                         topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
+                        topic_name = clean(topic_name, no_emoji=True)
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
+                    print(drive_service,save_location,material_assets,"\n")
                     download_assets(drive_service,save_location,material_assets)
     else:
         pass
@@ -126,7 +158,7 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
                 for material in work["materials"]:
                     save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
-                    download_assets(drive_service,save_dir,material)
+                    #download_assets(drive_service,save_dir,material)
 
 
 def main():
@@ -137,26 +169,33 @@ def main():
 
     courses = classroom_service.courses().list().execute()
 
-    i=1
-
-    for course in courses["courses"]:
+    for i, course in enumerate(courses["courses"], start=1):
         print(f"Num: {i} --> Course Name: { course['name']} - { course['id'] }")
         i=i+1
 
-    print("Please select the corses you want to download: (ex: 1,3 or 1,2,3)")
-    opt = ""
-    input(opt)
-    print(f"You have selected: {opt}")
+    opt = input("Please select the courses you want to download: (ex: 1,3 or 1,2,3): ")
 
-    for course in courses["courses"]:
-        course_name = course["name"]
-        course_folder_path = os.path.join(os.getcwd(),"Classroom Downloads", course_name)
-        if not os.path.exists(course_folder_path):
-            os.makedirs(course_folder_path)
+    # Split the input and create a list of selected course IDs
+    selected_ids = [int(id_) for id_ in opt.split(',')]
 
-        course_id = course["id"]
-        # download_materials(course_name,drive_service, classroom_service,course_id)
-        # download_activities(classroom_service,drive_service, course_name,course_id)
+    # Display the selected course IDs
+    print(f"You have selected: {selected_ids}")
+
+
+    # Filter the courses based on the selected IDs
+    # courses["courses"] = [course for course in courses["courses"] if course["id"] in selected_ids]    
+    for i, course in enumerate(courses["courses"], start=1):
+        if(i in selected_ids):
+            course_name = course["name"]
+            course_folder_path = os.path.join(os.getcwd(),"Classroom Downloads", course_name)
+            if not os.path.exists(course_folder_path):
+                os.makedirs(course_folder_path)
+
+            course_id = course["id"]
+            download_materials(course_name,drive_service, classroom_service,course_id)
+            download_activities(classroom_service,drive_service, course_name,course_id)
+        else:
+            print(f"Skipping {course['name']}")
 
 
 if __name__ == '__main__':
