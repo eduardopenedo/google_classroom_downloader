@@ -97,7 +97,7 @@ def download_assets(drive_service,save_location,material_assets):
     if material_assets.get("driveFile"):
         try:
             file_id = material_assets["driveFile"]["driveFile"]["id"]
-            file_name = clean(material_assets["driveFile"]["driveFile"]["title"])
+            file_name = material_assets["driveFile"]["driveFile"]["title"]
             file_path = os.path.join(save_location, re.sub(r'["<>:/|\?]', "-",file_name))
 
             print(file_name, file_path)
@@ -106,7 +106,7 @@ def download_assets(drive_service,save_location,material_assets):
                 os.makedirs(save_location)
             if not os.path.exists(file_path):
                 pass
-                # download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
+                download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
             else:
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
@@ -131,8 +131,9 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
     course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
 
     if course_work_materials.get('courseWorkMaterial'):
+        i=0;
         for material in course_work_materials['courseWorkMaterial']:
-            if 'materials' in material.keys() and 'title' in material.keys():
+            if 'materials' in material.keys() and 'title' in material.keys() and i < 3:
                 aula_name = material["title"]
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
@@ -143,8 +144,9 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
-                    print(drive_service,save_location,material_assets,"\n")
+                    # print(drive_service,save_location,material_assets,"\n")
                     download_assets(drive_service,save_location,material_assets)
+        i=i+1;
     else:
         pass
 
