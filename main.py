@@ -13,6 +13,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
+cloud_path = os.path.join("/mnt/d/01-MMARTINHO", "OneDrive - Universidade Aberta")
+
 #Configuração básica do logger
 logging.basicConfig(filename='Classroom.log', level=logging.ERROR,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
@@ -25,32 +27,6 @@ def extract_text(input_string):
         return result
     else:
         return input_string
-
-def remove_emojis(data):
-    emoj = re.compile("["
-        u"\U0001F600-\U0001F64F"  # emoticons
-        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # transport & map symbols
-        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        u"\U00002500-\U00002BEF"  # chinese char
-        u"\U00002702-\U000027B0"
-        u"\U00002702-\U000027B0"
-        u"\U000024C2-\U0001F251"
-        u"\U0001f926-\U0001f937"
-        u"\U00010000-\U0010ffff"
-        u"\u2640-\u2642" 
-        u"\u2600-\u2B55"
-        u"\u200d"
-        u"\u23cf"
-        u"\u23e9"
-        u"\u231a"
-        u"\ufe0f"  # dingbats
-        u"\u3030"
-        u"\u2705"
-        u"\1F3C6"
-                      "]+", re.UNICODE)
-    return re.sub(emoj, '', data)
-
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/classroom.courses.readonly",
@@ -105,8 +81,6 @@ def download_drive_file(file_id,drive_service,file_path):
     f = open(file_path, "wb")
     f.write(fh.getbuffer())
 
-erros_download = []
-
 def download_assets(drive_service,save_location,material_assets):
 
     if material_assets.get("driveFile"):
@@ -149,16 +123,18 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
     if course_work_materials.get('courseWorkMaterial'):
         for material in course_work_materials['courseWorkMaterial']:
             if 'materials' in material.keys() and 'title' in material.keys() and i < 4:
-                aula_name = material["title"]
+                aula_name = material["title"].replace(" ", "_")
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
-                        topic_name = extract_text(get_topic_name(topic_id=material["topicId"], topics=topics))
-                        save_location = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
+                        topic_name = extract_text(get_topic_name(topic_id=material["topicId"], topics=topics).replace(" ", "_"))
+                        course_name = course_name.replace(" ", "_")
+                        #os.getcwd() ou cloud_path
+                        save_location = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
                     else:
-                        save_location = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
+                        save_location = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
-                    save_location = save_location.replace(" ", "_");
+                    #save_location = save_location.replace(" ", "_");
                     download_assets(drive_service,save_location,material_assets)
                 #i = i +1
     else:
@@ -172,7 +148,7 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
             if 'materials' in work.keys() and 'title'in work.keys():
                 activity_name = work["title"]
                 for material in work["materials"]:
-                    save_dir = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
+                    save_dir = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
                     #download_assets(drive_service,save_dir,material)
 
@@ -185,10 +161,6 @@ def remove_spaces(directory):
                 new_path = os.path.join(root, new_filename)
                 os.rename(old_path, new_path)
                 print(f"Renamed: {filename} -> {new_filename}")
-
-def print_erros_download():
-    for erro in erros_download:
-        print(erro)
 
 def main():
     creds = get_creds()
@@ -216,7 +188,8 @@ def main():
     for i, course in enumerate(courses["courses"], start=1):
         if(i in selected_ids):
             course_name = course["name"]
-            course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name.replace(" ", "_"))
+            #course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name.replace(" ", "_"))
+            course_folder_path = os.path.join(cloud_path,"Classroom_Downloads", course_name.replace(" ", "_"))
             if not os.path.exists(course_folder_path):
                 os.makedirs(course_folder_path)
 
@@ -227,11 +200,6 @@ def main():
             #remove_spaces(course_folder_path)
         else:
             print(f"Skipping {course['name']}")
-
-        
-    
-    print_erros_download()
-
 
 if __name__ == '__main__':
     main()
