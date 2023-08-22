@@ -123,6 +123,7 @@ def download_assets(drive_service,save_location,material_assets):
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
             str = "Error: ",file_path, material_assets["driveFile"]["driveFile"]["title"], material_assets["driveFile"]["driveFile"]["alternateLink"]
+            print(str)
             logging.error(str)
 
     elif "youtubeVideo" in material_assets.keys():
