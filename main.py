@@ -1,5 +1,7 @@
 from __future__ import print_function
 from cleantext import clean
+import pprint
+import logging
 
 import os.path
 import re
@@ -11,6 +13,19 @@ from googleapiclient import http
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+
+#Configuração básica do logger
+logging.basicConfig(filename='Classroom.log', level=logging.ERROR,
+                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
+
+def extract_text(input_string):
+    # Encontra o primeiro número, ponto ou letra após a remoção dos emojis
+    match = re.search(r'[\d\.a-zA-Z]', input_string)
+    if match:
+        result = input_string[match.start():]
+        return result
+    else:
+        return input_string
 
 def remove_emojis(data):
     emoj = re.compile("["
@@ -76,41 +91,43 @@ def get_topic_name(topic_id, topics):
     for topic in topics['topic']:
         if topic['topicId'] == topic_id:
             topic_name = topic['name']
+    #extract_text(topic_name)
     return topic_name
-
 
 def download_drive_file(file_id,drive_service,file_path):
     request = drive_service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
     downloader = http.MediaIoBaseDownload(fh, request)
     done = False
-    print(file_path.split("\\")[-1])
+    print("Downloading: ", (file_path.split("\\")[-1]))
     while done is False:
         status, done = downloader.next_chunk()
         print("Download %d%%." % int(status.progress() * 100))
     f = open(file_path, "wb")
     f.write(fh.getbuffer())
 
+erros_download = []
 
 def download_assets(drive_service,save_location,material_assets):
-   
+
     if material_assets.get("driveFile"):
         try:
             file_id = material_assets["driveFile"]["driveFile"]["id"]
-            file_name = material_assets["driveFile"]["driveFile"]["title"]
+            file_name = material_assets["driveFile"]["driveFile"]["title"].replace(" ", "_")
             file_path = os.path.join(save_location, re.sub(r'["<>:/|\?]', "-",file_name))
-
-            print(file_name, file_path)
 
             if not os.path.exists(save_location):
                 os.makedirs(save_location)
             if not os.path.exists(file_path):
-                pass
                 download_drive_file(file_id=file_id, file_path=file_path,drive_service=drive_service)
             else:
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
-            print("GDrive asset can't be downloaded: ",e)
+            #print("Error: ", material_assets["driveFile"]["driveFile"]["title"], material_assets["driveFile"]["driveFile"]["alternateLink"])
+            str = "Error: ",file_path, material_assets["driveFile"]["driveFile"]["title"], material_assets["driveFile"]["driveFile"]["alternateLink"]
+            #erros_download.append(str)
+            #print("GDrive asset can't be downloaded: ",e)
+            logging.error(str)
 
     elif "youtubeVideo" in material_assets.keys():
         try:
@@ -124,29 +141,28 @@ def download_assets(drive_service,save_location,material_assets):
                     f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
         except Exception as e:
             print("Youtube asset can't be downloaded: ",e)
+            # logging.error(e)
 
 
 def download_materials(course_name,drive_service, classroom_service, course_id):
     topics = classroom_service.courses().topics().list(courseId=course_id).execute()
     course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
+    i = 0
 
     if course_work_materials.get('courseWorkMaterial'):
-        i=0;
         for material in course_work_materials['courseWorkMaterial']:
-            if 'materials' in material.keys() and 'title' in material.keys() and i < 3:
+            if 'materials' in material.keys() and 'title' in material.keys() and i < 4:
                 aula_name = material["title"]
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
                         topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
-                        topic_name = clean(topic_name, no_emoji=True)
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
-                                                     re.sub(r'["<>:/|\?]', "-", aula_name))
+                                                     re.sub(r'["<>:/|\?]', "-", aula_name)).replace(" ", "_")
                     else:
                         save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
-                                                     re.sub(r'["<>:/|\?]', "-", aula_name))
-                    # print(drive_service,save_location,material_assets,"\n")
+                                                     re.sub(r'["<>:/|\?]', "-", aula_name)).replace(" ", "_")
                     download_assets(drive_service,save_location,material_assets)
-        i=i+1;
+                #i = i +1
     else:
         pass
 
@@ -162,6 +178,19 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
                     #download_assets(drive_service,save_dir,material)
 
+def remove_spaces(directory):
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            if ' ' in filename:
+                new_filename = filename.replace(' ', '_')
+                old_path = os.path.join(root, filename)
+                new_path = os.path.join(root, new_filename)
+                os.rename(old_path, new_path)
+                print(f"Renamed: {filename} -> {new_filename}")
+
+def print_erros_download():
+    for erro in erros_download:
+        print(erro)
 
 def main():
     creds = get_creds()
@@ -188,16 +217,21 @@ def main():
     # courses["courses"] = [course for course in courses["courses"] if course["id"] in selected_ids]    
     for i, course in enumerate(courses["courses"], start=1):
         if(i in selected_ids):
-            course_name = course["name"]
-            course_folder_path = os.path.join(os.getcwd(),"Classroom Downloads", course_name)
+            course_name = course["name"].replace(" ", "_")
+            course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name).replace(" ", "_")
             if not os.path.exists(course_folder_path):
                 os.makedirs(course_folder_path)
 
             course_id = course["id"]
             download_materials(course_name,drive_service, classroom_service,course_id)
             download_activities(classroom_service,drive_service, course_name,course_id)
+            remove_spaces(course_folder_path)
         else:
             print(f"Skipping {course['name']}")
+
+        
+    
+    print_erros_download()
 
 
 if __name__ == '__main__':
