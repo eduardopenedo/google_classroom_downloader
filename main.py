@@ -1,6 +1,5 @@
 from __future__ import print_function
 from cleantext import clean
-import pprint
 import logging
 
 import os.path
@@ -91,7 +90,7 @@ def get_topic_name(topic_id, topics):
     for topic in topics['topic']:
         if topic['topicId'] == topic_id:
             topic_name = topic['name']
-    #extract_text(topic_name)
+    extract_text(topic_name)
     return topic_name
 
 def download_drive_file(file_id,drive_service,file_path):
@@ -123,10 +122,7 @@ def download_assets(drive_service,save_location,material_assets):
             else:
                 print(f"{os.path.basename(save_location)} already exists")
         except Exception as e:
-            #print("Error: ", material_assets["driveFile"]["driveFile"]["title"], material_assets["driveFile"]["driveFile"]["alternateLink"])
             str = "Error: ",file_path, material_assets["driveFile"]["driveFile"]["title"], material_assets["driveFile"]["driveFile"]["alternateLink"]
-            #erros_download.append(str)
-            #print("GDrive asset can't be downloaded: ",e)
             logging.error(str)
 
     elif "youtubeVideo" in material_assets.keys():
@@ -155,12 +151,13 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                 aula_name = material["title"]
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
-                        topic_name = get_topic_name(topic_id=material["topicId"], topics=topics)
-                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
-                                                     re.sub(r'["<>:/|\?]', "-", aula_name)).replace(" ", "_")
+                        topic_name = extract_text(get_topic_name(topic_id=material["topicId"], topics=topics))
+                        save_location = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
+                                                     re.sub(r'["<>:/|\?]', "-", aula_name))
                     else:
-                        save_location = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
-                                                     re.sub(r'["<>:/|\?]', "-", aula_name)).replace(" ", "_")
+                        save_location = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
+                                                     re.sub(r'["<>:/|\?]', "-", aula_name))
+                    save_location = save_location.replace(" ", "_");
                     download_assets(drive_service,save_location,material_assets)
                 #i = i +1
     else:
@@ -174,7 +171,7 @@ def download_activities(classroom_service,drive_service, course_name,course_id):
             if 'materials' in work.keys() and 'title'in work.keys():
                 activity_name = work["title"]
                 for material in work["materials"]:
-                    save_dir = os.path.join(os.getcwd(), "Classroom Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
+                    save_dir = os.path.join(os.getcwd(), "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
                     #download_assets(drive_service,save_dir,material)
 
@@ -217,15 +214,16 @@ def main():
     # courses["courses"] = [course for course in courses["courses"] if course["id"] in selected_ids]    
     for i, course in enumerate(courses["courses"], start=1):
         if(i in selected_ids):
-            course_name = course["name"].replace(" ", "_")
-            course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name).replace(" ", "_")
+            course_name = course["name"]
+            course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name.replace(" ", "_"))
             if not os.path.exists(course_folder_path):
                 os.makedirs(course_folder_path)
 
             course_id = course["id"]
             download_materials(course_name,drive_service, classroom_service,course_id)
             download_activities(classroom_service,drive_service, course_name,course_id)
-            remove_spaces(course_folder_path)
+            
+            #remove_spaces(course_folder_path)
         else:
             print(f"Skipping {course['name']}")
 
