@@ -25,3 +25,4 @@ tqdm==4.62.3
 uritemplate==4.1.1
 urllib3==1.26.7
 youtube-dl==2021.6.6
+clean_text==0.6.0
