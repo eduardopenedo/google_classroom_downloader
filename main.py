@@ -1,10 +1,9 @@
-from __future__ import print_function
-from cleantext import clean
 import logging
-
 import os.path
 import re
 import io
+import tkinter as tk
+from tkinter import filedialog
 
 # import googleapiclient.discovery
 from googleapiclient.discovery import build
@@ -13,13 +12,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
-cloud_path = os.path.join("/mnt/d/01-MMARTINHO", "OneDrive - Universidade Aberta")
-
 #Configuração básica do logger
 logging.basicConfig(filename='Classroom.log', level=logging.ERROR,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
-def extract_text(input_string):
+def remove_emojis(input_string):
     # Encontra o primeiro número, ponto ou letra após a remoção dos emojis
     match = re.search(r'[\d\.a-zA-Z]', input_string)
     if match:
@@ -66,7 +63,7 @@ def get_topic_name(topic_id, topics):
     for topic in topics['topic']:
         if topic['topicId'] == topic_id:
             topic_name = topic['name']
-    extract_text(topic_name)
+    remove_emojis(topic_name)
     return topic_name
 
 def download_drive_file(file_id,drive_service,file_path):
@@ -111,14 +108,14 @@ def download_assets(drive_service,save_location,material_assets):
                 os.system(
                     f"youtube-dl.exe {yturl} -f mp4 -o \"{os.path.join(save_location, '%(title)s.%(ext)s')}\"")
         except Exception as e:
-            print("Youtube asset can't be downloaded: ",e)
-            # logging.error(e)
+            str = "Error (youtubeVideo): ",save_location, yt_name, yturl
+            print(str)
+            logging.error(str)
 
-
-def download_materials(course_name,drive_service, classroom_service, course_id):
+# Download materials
+def download_materials(save_path, course_name,drive_service, classroom_service, course_id):
     topics = classroom_service.courses().topics().list(courseId=course_id).execute()
     course_work_materials = classroom_service.courses().courseWorkMaterials().list(courseId=course_id).execute()
-    i = 0
 
     if course_work_materials.get('courseWorkMaterial'):
         for material in course_work_materials['courseWorkMaterial']:
@@ -126,61 +123,60 @@ def download_materials(course_name,drive_service, classroom_service, course_id):
                 aula_name = material["title"].replace(" ", "_")
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
-                        topic_name = extract_text(get_topic_name(topic_id=material["topicId"], topics=topics).replace(" ", "_"))
+                        topic_name = remove_emojis(get_topic_name(topic_id=material["topicId"], topics=topics).replace(" ", "_"))
                         course_name = course_name.replace(" ", "_")
                         #os.getcwd() ou cloud_path
-                        save_location = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
+                        save_location = os.path.join(save_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), re.sub(r'["<>:/|\?]', "-", topic_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
                     else:
-                        save_location = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
+                        save_location = os.path.join(save_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name),
                                                      re.sub(r'["<>:/|\?]', "-", aula_name))
-                    #save_location = save_location.replace(" ", "_");
                     download_assets(drive_service,save_location,material_assets)
-                #i = i +1
     else:
         pass
 
-
-def download_activities(classroom_service,drive_service, course_name,course_id):
+# Download activities
+def download_activities(save_path, classroom_service,drive_service, course_name,course_id):
     course_works = classroom_service.courses().courseWork().list(courseId=course_id).execute()
     if course_works.get("courseWork"):
         for work in course_works["courseWork"]:
             if 'materials' in work.keys() and 'title'in work.keys():
                 activity_name = work["title"]
                 for material in work["materials"]:
-                    save_dir = os.path.join(cloud_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
+                    save_dir = os.path.join(save_path, "Classroom_Downloads", re.sub(r'["<>:/|\?]', "-", course_name), "Activities",
                                             re.sub(r'["<>:/|\?]', "-", activity_name))
-                    #download_assets(drive_service,save_dir,material)
+                    download_assets(drive_service,save_dir,material)
 
-def remove_spaces(directory):
-    for root, _, files in os.walk(directory):
-        for filename in files:
-            if ' ' in filename:
-                new_filename = filename.replace(' ', '_')
-                old_path = os.path.join(root, filename)
-                new_path = os.path.join(root, new_filename)
-                os.rename(old_path, new_path)
-                print(f"Renamed: {filename} -> {new_filename}")
 
 def main():
-    creds = get_creds()
 
+    # Tkinter initialization
+    root = tk.Tk()
+    root.withdraw()
+
+    # Google AUTH Initialization
+    creds = get_creds()
     classroom_service = build('classroom', 'v1', credentials=creds)
     drive_service = build('drive', 'v3', credentials=creds)
 
     courses = classroom_service.courses().list().execute()
 
+    # Print the courses and ask the user to select the courses he wants to download
     for i, course in enumerate(courses["courses"], start=1):
         print(f"Num: {i} --> Course Name: { course['name']} - { course['id'] }")
         i=i+1
-
     opt = input("Please select the courses you want to download: (ex: 1,3 or 1,2,3): ")
 
     # Split the input and create a list of selected course IDs
     selected_ids = [int(id_) for id_ in opt.split(',')]
 
-    # Display the selected course IDs
-    print(f"You have selected: {selected_ids}")
+    # Ask the user if he wants to change the download location
+    opt_dir = input("Do you want to change the download location? (y/n)")
+    if(opt_dir == "y"):
+        save_path = filedialog.askdirectory()
+        print("Selected location: \n", save_path)
+    else:
+        save_path = os.getcwd()
 
 
     # Filter the courses based on the selected IDs
@@ -188,18 +184,18 @@ def main():
     for i, course in enumerate(courses["courses"], start=1):
         if(i in selected_ids):
             course_name = course["name"]
-            #course_folder_path = os.path.join(os.getcwd(),"Classroom_Downloads", course_name.replace(" ", "_"))
-            course_folder_path = os.path.join(cloud_path,"Classroom_Downloads", course_name.replace(" ", "_"))
+            print(f"-- Downloading {course_name}...")
+            course_folder_path = os.path.join(save_path,"Classroom_Downloads", course_name.replace(" ", "_"))
             if not os.path.exists(course_folder_path):
                 os.makedirs(course_folder_path)
 
             course_id = course["id"]
-            download_materials(course_name,drive_service, classroom_service,course_id)
-            download_activities(classroom_service,drive_service, course_name,course_id)
+            download_materials(save_path, course_name,drive_service, classroom_service,course_id)
+            download_activities(save_path, classroom_service,drive_service, course_name,course_id)
             
-            #remove_spaces(course_folder_path)
+            print(f"-- Download of { course_name } complete! Check for errors at Classroom.log\n")
         else:
-            print(f"Skipping {course['name']}")
+            print(f"-- Skipping download for {course['name']}")
 
 if __name__ == '__main__':
     main()
