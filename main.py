@@ -119,7 +119,7 @@ def download_materials(save_path, course_name,drive_service, classroom_service, 
 
     if course_work_materials.get('courseWorkMaterial'):
         for material in course_work_materials['courseWorkMaterial']:
-            if 'materials' in material.keys() and 'title' in material.keys() and i < 4:
+            if 'materials' in material.keys() and 'title' in material.keys():
                 aula_name = material["title"].replace(" ", "_")
                 for material_assets in material["materials"]:
                     if material.get("topicId"):
@@ -185,15 +185,17 @@ def main():
         if(i in selected_ids):
             course_name = course["name"]
             print(f"-- Downloading {course_name}...")
-            course_folder_path = os.path.join(save_path,"Classroom_Downloads", course_name.replace(" ", "_"))
+            actualcoursename = course_name.replace(" ", "_")
+            actualcoursename = course_name.replace("|", "_")
+            course_folder_path = os.path.join(save_path,"Classroom_Downloads", actualcoursename)
             if not os.path.exists(course_folder_path):
                 os.makedirs(course_folder_path)
 
             course_id = course["id"]
-            download_materials(save_path, course_name,drive_service, classroom_service,course_id)
-            download_activities(save_path, classroom_service,drive_service, course_name,course_id)
+            download_materials(save_path, actualcoursename,drive_service, classroom_service,course_id)
+            download_activities(save_path, classroom_service,drive_service, actualcoursename,course_id)
             
-            print(f"-- Download of { course_name } complete! Check for errors at Classroom.log\n")
+            print(f"-- Download of { actualcoursename } complete! Check for errors at Classroom.log\n")
         else:
             print(f"-- Skipping download for {course['name']}")
 
